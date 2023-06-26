@@ -1,0 +1,17 @@
+tournament:
+  directory: src/main/resources/tournament
+
+game:
+  winner:
+    bonus: 10
+
+basketball:
+  coefficients:
+    scored-point: 2
+    rebound: 1
+    assist: 1
+
+handball:
+  coefficients:
+    goals-made: 2
+    goals-received: -1
