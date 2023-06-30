@@ -19,7 +19,7 @@ public class GameFileServiceImpl implements GameFileService {
                 throw new IllegalStateException("Game name is not determined in file: " + gameFile.getPath());
             return firstLine;
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new IllegalStateException(e.getMessage());
         }
     }
 
@@ -27,6 +27,6 @@ public class GameFileServiceImpl implements GameFileService {
         if (gameFile.isDirectory())
             throw new IllegalStateException("Game file cannot be a directory: " + gameFile.getPath());
         else if (!FilenameUtils.getExtension(gameFile.getName()).equals("csv"))
-            throw new RuntimeException("Unsupported file extension");
+            throw new IllegalStateException("Unsupported file extension");
     }
 }

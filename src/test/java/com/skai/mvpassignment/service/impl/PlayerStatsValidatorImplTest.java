@@ -11,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,8 +32,13 @@ class PlayerStatsValidatorImplTest {
     @Test
     public void testValidationWithDuplicates() {
         // Given
-        List<PlayerStats> playerStatsWithDuplicatedNicks = getPlayerStatsWithDuplicatedNicks();
-        List<PlayerStats> playerStatsWithDuplicatedNumbers = getPlayerStatsWithDuplicatedNumbers();
+        List<PlayerStats> playerStatsWithDuplicatedNicks = List.of(
+                HandballPlayerStats.builder().nick("nick1").number("12").build(),
+                HandballPlayerStats.builder().nick("nick1").number("13").build());
+
+        List<PlayerStats> playerStatsWithDuplicatedNumbers = List.of(
+                HandballPlayerStats.builder().nick("nick1").number("12").build(),
+                HandballPlayerStats.builder().nick("nick2").number("12").build());
 
         // Then
         Assertions.assertThrows(ValidationException.class, () -> validator.validate(playerStatsWithDuplicatedNicks, ""));
@@ -44,25 +48,10 @@ class PlayerStatsValidatorImplTest {
     @Test
     public void testValidationWithCorrectData() {
         // Given
-        List<PlayerStats> playersStats = getPlayerStats();
-
+        List<PlayerStats> playersStats = List.of(
+                HandballPlayerStats.builder().nick("nick1").number("12").build(),
+                HandballPlayerStats.builder().nick("nick2").number("13").build());
         //Then
         Assertions.assertDoesNotThrow(() -> validator.validate(playersStats, ""));
-    }
-
-    private List<PlayerStats> getPlayerStatsWithDuplicatedNicks() {
-        List<PlayerStats> playerStats = getPlayerStats();
-        playerStats.get(0).getPlayerData().setNick(playerStats.get(1).getPlayerData().getNick());
-        return playerStats;
-    }
-    private List<PlayerStats> getPlayerStatsWithDuplicatedNumbers() {
-        List<PlayerStats> playerStats = getPlayerStats();
-        playerStats.get(0).getPlayerData().setNumber(playerStats.get(1).getPlayerData().getNumber());
-        return playerStats;
-    }
-    private List<PlayerStats> getPlayerStats() {
-        HandballPlayerStats player1 = new HandballPlayerStats("name1","nick1", "12","Team A", 10, 12, null);
-        HandballPlayerStats player2 = new HandballPlayerStats("name2","nick2", "13","Team B", 12, 15, null);
-        return Arrays.asList(player1, player2);
     }
 }

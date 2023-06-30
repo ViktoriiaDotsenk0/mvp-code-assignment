@@ -1,18 +1,14 @@
 package com.skai.mvpassignment.service.impl;
 
-import com.skai.mvpassignment.exceptions.ErrorLogger;
 import com.skai.mvpassignment.model.PlayerData;
-import com.skai.mvpassignment.service.ScoreCounter;
-import com.skai.mvpassignment.service.ScoreCounterProvider;
+import com.skai.mvpassignment.service.AwardService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,7 +20,7 @@ public class TournamentServiceImplTest {
     @InjectMocks
     private TournamentServiceImpl underTest;
     @Mock
-    private ScoreCounterProvider mockScoreCounterProvider;
+    private AwardService mockAwardService;
 
 
     @Test
@@ -33,14 +29,9 @@ public class TournamentServiceImplTest {
         File gameDir = Mockito.mock(File.class);
         Mockito.when(gameDir.listFiles()).thenReturn(new File[0]);
 
-        try (MockedStatic<ErrorLogger> mockedErrorLogger = Mockito.mockStatic(ErrorLogger.class)) {
-            mockedErrorLogger.when(() -> ErrorLogger.logAndExit(Mockito.anyString())).thenAnswer((Answer<Void>) invocation -> {
-                throw new RuntimeException((String) invocation.getArgument(0));
-            });
+        // Then
+        Assertions.assertThrows(RuntimeException.class, () -> underTest.getTournamentPlayers(gameDir));
 
-            // Then
-            Assertions.assertThrows(RuntimeException.class, () -> underTest.getTournamentPlayers(gameDir));
-        }
     }
 
     @Test
@@ -50,7 +41,6 @@ public class TournamentServiceImplTest {
         File gameFile1 = Mockito.mock(File.class);
         File gameFile2 = Mockito.mock(File.class);
 
-        ScoreCounter mockScoreCounter = Mockito.mock(ScoreCounter.class);
         PlayerData player1 = PlayerData.builder().nick("nick1").build();
         player1.setRatingPoints(10);
         PlayerData player2 = PlayerData.builder().nick("nick2").build();
@@ -61,10 +51,8 @@ public class TournamentServiceImplTest {
         List<PlayerData> gamePlayers2 = List.of(player2, player3);
 
         Mockito.when(gameDir.listFiles()).thenReturn(new File[]{gameFile1, gameFile2});
-        Mockito.when(mockScoreCounterProvider.getScoreCounter(gameFile1)).thenReturn(mockScoreCounter);
-        Mockito.when(mockScoreCounterProvider.getScoreCounter(gameFile2)).thenReturn(mockScoreCounter);
-        Mockito.when(mockScoreCounter.countPlayersScore(gameFile1)).thenReturn(gamePlayers1);
-        Mockito.when(mockScoreCounter.countPlayersScore(gameFile2)).thenReturn(gamePlayers2);
+        Mockito.when(mockAwardService.getPlayersWithBonuses(gameFile1)).thenReturn(gamePlayers1);
+        Mockito.when(mockAwardService.getPlayersWithBonuses(gameFile2)).thenReturn(gamePlayers2);
 
         // When
         List<PlayerData> result = underTest.getTournamentPlayers(gameDir);
@@ -74,23 +62,14 @@ public class TournamentServiceImplTest {
         Assertions.assertEquals(2, result.size());
         Assertions.assertTrue(result.contains(player1));
         Assertions.assertTrue(result.contains(player2));
-        Mockito.verify(mockScoreCounterProvider, Mockito.times(2))
-                .getScoreCounter(Mockito.any(File.class));
-        Mockito.verify(mockScoreCounter, Mockito.times(2))
-                .countPlayersScore(Mockito.any(File.class));
+        Mockito.verify(mockAwardService, Mockito.times(2))
+                .getPlayersWithBonuses(Mockito.any(File.class));
     }
+
     @Test
     public void testWithNullAndEmptyList() {
-        // Given
-        try (MockedStatic<ErrorLogger> mockedErrorLogger = Mockito.mockStatic(ErrorLogger.class)) {
-            mockedErrorLogger.when(() -> ErrorLogger.logAndExit(Mockito.anyString())).thenAnswer((Answer<Void>) invocation -> {
-                throw new RuntimeException((String) invocation.getArgument(0));
-            });
-
-            // Then
-            Assertions.assertThrows(RuntimeException.class, () -> underTest.getMVP(null));
-            Assertions.assertThrows(RuntimeException.class, () -> underTest.getMVP(new ArrayList<>()));
-        }
+            Assertions.assertThrows(IllegalArgumentException.class, () -> underTest.getMVP(null));
+            Assertions.assertThrows(IllegalArgumentException.class, () -> underTest.getMVP(new ArrayList<>()));
     }
 
     @Test

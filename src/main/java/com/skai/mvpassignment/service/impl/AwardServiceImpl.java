@@ -25,9 +25,14 @@ public class AwardServiceImpl implements AwardService {
     public List<PlayerData> getPlayersWithBonuses(File gameFile) {
         Map<String, List<GameResult>> teamsGameResults = statsCounter.calculateGameResults(gameFile);
         String winnerTeamName = getWinnerTeamName(teamsGameResults);
-        List<GameResult> winners = bonusService.addBonuses(teamsGameResults.get(winnerTeamName));
-        teamsGameResults.put(winnerTeamName, winners);
-        return  teamsGameResults.values()
+        return teamsGameResults.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getKey().equals(winnerTeamName) ?
+                                bonusService.addBonuses(entry.getValue()) :
+                                entry.getValue()
+                )).values()
                 .stream()
                 .flatMap(List::stream)
                 .map(GameResult::getPlayerData)
@@ -35,20 +40,25 @@ public class AwardServiceImpl implements AwardService {
     }
 
     private String getWinnerTeamName(Map<String, List<GameResult>> teamsGameResults) {
-        return (String) teamsGameResults.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .mapToInt(gameResult -> gameResult.getGameData().getGameScore())
-                                .sum()
-                )).entrySet().stream()
-                .sorted(Map.Entry.comparingByValue())
-                .skip(Math.max(0, teamsGameResults.size() - 2))
-                .distinct()
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toList(),
-                        entries -> entries.get(0).getValue().equals(entries.get(1).getValue()) ?
-                                Optional.empty() : Optional.of(entries.get(1).getKey()))
-                ).orElseThrow(() -> new IllegalStateException("Invalid game statistics. Cannot define the winner team"));
+        try {
+            return (String) teamsGameResults.entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> entry.getValue().stream()
+                                    .mapToInt(gameResult -> gameResult.getGameData().getGameScore())
+                                    .sum()
+                    )).entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue())
+                    .skip(Math.max(0, teamsGameResults.size() - 2))
+                    .distinct()
+                    .collect(Collectors.collectingAndThen(
+                            Collectors.toList(),
+                            entries -> entries.get(0).getValue().equals(entries.get(1).getValue()) ?
+                                    Optional.empty() : Optional.of(entries.get(1).getKey()))
+                    ).orElseThrow(() -> new IllegalStateException("Invalid game statistics. Cannot define the winner team"));
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalStateException("Invalid game statistics. Must be at least 2 teams in a game");
+        }
+
     }
 }

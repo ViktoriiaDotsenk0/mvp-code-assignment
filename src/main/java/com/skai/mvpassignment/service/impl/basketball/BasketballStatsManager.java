@@ -3,10 +3,12 @@ package com.skai.mvpassignment.service.impl.basketball;
 import com.skai.mvpassignment.model.statistics.BasketballPlayerStats;
 import com.skai.mvpassignment.model.statistics.PlayerStats;
 import com.skai.mvpassignment.service.StatsManager;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@Setter
 public class BasketballStatsManager extends StatsManager<BasketballPlayerStats> {
     @Value("${basketball.coefficients.scored-point}")
     private Integer scoredPointsCoeff;

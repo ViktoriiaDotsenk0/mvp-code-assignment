@@ -14,7 +14,7 @@ class CSVParserImplTest {
     public void testParse() throws FileNotFoundException {
         // Given
         CSVParserImpl<BasketballPlayerStats> parser = new CSVParserImpl<>();
-        File basketballGameFile = new File("src/test/resources/test-tournament/basketball-game1.csv");
+        File basketballGameFile = new File("src/test/resources/test-tournament/basketball-game.csv");
         Class<BasketballPlayerStats> type = BasketballPlayerStats.class;
 
         // When

@@ -1,5 +1,6 @@
 package com.skai.mvpassignment.service.impl;
 
+import com.skai.mvpassignment.model.GameResult;
 import com.skai.mvpassignment.model.PlayerData;
 import com.skai.mvpassignment.model.statistics.BasketballPlayerStats;
 import com.skai.mvpassignment.model.statistics.HandballPlayerStats;
@@ -21,24 +22,20 @@ class BonusServiceImplTest {
     }
 
     @Test
-    public void testAddWinnersBonuses_MultipleWinners_UpdatedScoresWithBonus() {
+    public void testAddBonuses() {
         // Given
-        List<PlayerStats> winners = getPlayersStatsList();
+        BasketballPlayerStats player1 = new BasketballPlayerStats("name1", "nick1", "12", "Team A", 10, 12, 8);
+        HandballPlayerStats player2 = new HandballPlayerStats("name2", "nick2", "13", "Team B", 12, 0);
+        List<GameResult> winners = Arrays.asList(new GameResult(player1,0), new GameResult(player2,0));
         int bonus = 10;
         underTest.setBonuses(bonus);
         // When
-        underTest.addWinnersBonuses(winners);
+        List<GameResult> winnersWithBonuses = underTest.addBonuses(winners);
 
         // Then
-        for (PlayerStats winnerStats : winners) {
-            PlayerData winnerPlayerData = winnerStats.getPlayerData();
+        for (GameResult winner : winnersWithBonuses) {
+            PlayerData winnerPlayerData = winner.getPlayerData();
             Assertions.assertEquals(bonus, winnerPlayerData.getRatingPoints());
         }
-    }
-
-    private List<PlayerStats> getPlayersStatsList() {
-        BasketballPlayerStats player1 = new BasketballPlayerStats("name1", "nick1", "12", "Team A", 10, 12, 8, null);
-        HandballPlayerStats player2 = new HandballPlayerStats("name2", "nick2", "13", "Team B", 12, 0, null);
-        return Arrays.asList(player1, player2);
     }
 }
