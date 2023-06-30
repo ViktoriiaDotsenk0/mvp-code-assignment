@@ -26,11 +26,11 @@ public class PlayerStatsValidatorImpl implements PlayersStatsValidator {
         Set<String> nickNames = new HashSet<>();
         Set<String> numbers = new HashSet<>();
         for (PlayerStats playerStats : playersStats) {
-            if (nickNames.contains(playerStats.getPlayerData().getNick()) || numbers.contains(playerStats.getPlayerData().getNumber())) {
+            if (nickNames.contains(playerStats.getNick()) || numbers.contains(playerStats.getNumber())) {
                 throw new ValidationException("Not unique player stats in game file: " + path);
             } else {
-                nickNames.add(playerStats.getPlayerData().getNick());
-                numbers.add(playerStats.getPlayerData().getNumber());
+                nickNames.add(playerStats.getNick());
+                numbers.add(playerStats.getNumber());
             }
         }
     }

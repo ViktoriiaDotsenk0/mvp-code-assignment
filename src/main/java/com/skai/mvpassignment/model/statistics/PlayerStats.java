@@ -1,7 +1,8 @@
 package com.skai.mvpassignment.model.statistics;
 
-import com.skai.mvpassignment.model.PlayerData;
-
 public interface PlayerStats {
-    PlayerData getPlayerData();
+    String getName();
+    String getNick();
+    String getNumber();
+    String getTeamName();
 }

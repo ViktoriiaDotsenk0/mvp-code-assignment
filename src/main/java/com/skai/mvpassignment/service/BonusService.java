@@ -1,9 +1,11 @@
 package com.skai.mvpassignment.service;
 
+import com.skai.mvpassignment.model.GameResult;
 import com.skai.mvpassignment.model.statistics.PlayerStats;
 
 import java.util.List;
+import java.util.Map;
 
 public interface BonusService {
-    void addWinnersBonuses(List<? extends PlayerStats> winners);
+    List<GameResult> addBonuses(List<GameResult> winners);
 }
