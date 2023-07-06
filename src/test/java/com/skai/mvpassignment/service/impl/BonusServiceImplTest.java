@@ -8,18 +8,18 @@ import com.skai.mvpassignment.model.statistics.PlayerStats;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
 import java.util.List;
 
+@SpringBootTest(properties={
+        "game.winner.bonus=10"})
 class BonusServiceImplTest {
 
+    @Autowired
     private BonusServiceImpl underTest;
-
-    @BeforeEach
-    void setUp() {
-        underTest = new BonusServiceImpl();
-    }
 
     @Test
     public void testAddBonuses() {
@@ -27,15 +27,12 @@ class BonusServiceImplTest {
         BasketballPlayerStats player1 = new BasketballPlayerStats("name1", "nick1", "12", "Team A", 10, 12, 8);
         HandballPlayerStats player2 = new HandballPlayerStats("name2", "nick2", "13", "Team B", 12, 0);
         List<GameResult> winners = Arrays.asList(new GameResult(player1,0), new GameResult(player2,0));
-        int bonus = 10;
-        underTest.setBonuses(bonus);
         // When
-        List<GameResult> winnersWithBonuses = underTest.addBonuses(winners);
+        List<PlayerData> winnersWithBonuses = underTest.addBonuses(winners);
 
         // Then
-        for (GameResult winner : winnersWithBonuses) {
-            PlayerData winnerPlayerData = winner.getPlayerData();
-            Assertions.assertEquals(bonus, winnerPlayerData.getRatingPoints());
+        for (PlayerData winner : winnersWithBonuses) {
+            Assertions.assertEquals(10, winner.getRatingPoints());
         }
     }
 }

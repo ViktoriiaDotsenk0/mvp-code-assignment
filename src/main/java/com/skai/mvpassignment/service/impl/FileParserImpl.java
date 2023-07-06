@@ -8,10 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,12 +20,9 @@ public class FileParserImpl implements FileParser {
 
     @Override
     public Map<String, List<PlayerStats>> getTeamsStats(File gameFile, Class<? extends PlayerStats> type) {
-        Map<String, List<PlayerStats>> result = new HashMap<>();
-        for (PlayerStats playerStats : getGamePlayersStats(gameFile, type)) {
-            List<PlayerStats> team = result.computeIfAbsent(playerStats.getTeamName(), v -> new ArrayList<>());
-            team.add(playerStats);
-        }
-        return result;
+        return getGamePlayersStats(gameFile, type)
+                .stream()
+                .collect(Collectors.groupingBy(PlayerStats::getTeamName));
     }
 
     private List<? extends PlayerStats> getGamePlayersStats(File gameFile, Class<? extends PlayerStats> type) {

@@ -25,14 +25,13 @@ public class PlayerStatsValidatorImpl implements PlayersStatsValidator {
     private void validateForDuplicates(List<? extends PlayerStats> playersStats, String path) throws ValidationException {
         Set<String> nickNames = new HashSet<>();
         Set<String> numbers = new HashSet<>();
-        for (PlayerStats playerStats : playersStats) {
-            if (nickNames.contains(playerStats.getNick()) || numbers.contains(playerStats.getNumber())) {
-                throw new ValidationException("Not unique player stats in game file: " + path);
-            } else {
-                nickNames.add(playerStats.getNick());
-                numbers.add(playerStats.getNumber());
-            }
+
+        boolean hasDuplicates = playersStats.stream()
+                .anyMatch(playerStats ->
+                        !nickNames.add(playerStats.getNick()) || !numbers.add(playerStats.getNumber()));
+
+        if (hasDuplicates) {
+            throw new ValidationException("Not unique player stats in game file: " + path);
         }
     }
-
 }

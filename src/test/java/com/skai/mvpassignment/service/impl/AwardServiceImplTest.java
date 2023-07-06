@@ -36,16 +36,17 @@ class AwardServiceImplTest {
     public void testWithCorrectData() {
         //given
         File mockGameFile = Mockito.mock(File.class);
+        GameResult loser = new GameResult(BasketballPlayerStats.builder().nick("nick1").build(), 10);
+        GameResult winner = new GameResult(BasketballPlayerStats.builder().nick("nick3").build(), 20);
 
-        List<GameResult> losers = List.of(new GameResult(BasketballPlayerStats.builder().nick("nick1").build(), 10));
-        List<GameResult> winners = List.of(new GameResult(BasketballPlayerStats.builder().nick("nick3").build(), 20));
+        List<GameResult> winners = List.of(winner);
 
         Map<String, List<GameResult>> teamGameResults = Map.of(
-                "Team A", losers,
+                "Team A", List.of(loser),
                 "Team B", winners);
 
         Mockito.when(mockStatsCounter.calculateGameResults(mockGameFile)).thenReturn(teamGameResults);
-        Mockito.when(mockBonusService.addBonuses(winners)).thenReturn(winners);
+        Mockito.when(mockBonusService.addBonuses(winners)).thenReturn(List.of(winner.getPlayerData()));
 
         //when
         List<PlayerData> result = underTest.getPlayersWithBonuses(mockGameFile);

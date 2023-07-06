@@ -17,4 +17,8 @@ public class PlayerData {
     public String toString() {
         return String.format("%10s %10s %10s", nick, name, ratingPoints);
     }
+
+    public PlayerData(PlayerData playerData) {
+        this(playerData.name, playerData.nick, playerData.number, playerData.ratingPoints);
+    }
 }

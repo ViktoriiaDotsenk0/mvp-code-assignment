@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 
@@ -21,13 +23,7 @@ public class TournamentServiceImpl implements TournamentService {
     public List<PlayerData> getTournamentPlayers(File gameDir) {
         return Arrays.stream(getGameFiles(gameDir))
                 .flatMap(gameFile -> awardService.getPlayersWithBonuses(gameFile).stream())
-                .collect(Collectors.toMap(
-                        PlayerData::getNick,
-                        Function.identity(),
-                        (existingPlayer, newPlayer) -> {
-                            existingPlayer.setRatingPoints(existingPlayer.getRatingPoints() + newPlayer.getRatingPoints());
-                            return existingPlayer;
-                        }))
+                .collect(Collectors.toMap(PlayerData::getNick, Function.identity(), this::mergePlayers))
                 .values()
                 .stream()
                 .toList();
@@ -35,14 +31,22 @@ public class TournamentServiceImpl implements TournamentService {
 
     @Override
     public List<PlayerData> getMVP(List<PlayerData> players) {
-        if (players == null || players.isEmpty())
-            throw new IllegalArgumentException("Failed to getMvp. Players list is null or empty");
-        return players.stream()
+        return validatedPlayers(players).stream()
                 .collect(Collectors.groupingBy(PlayerData::getRatingPoints))
                 .entrySet().stream()
                 .max(Map.Entry.comparingByKey())
                 .map(Map.Entry::getValue)
                 .orElseThrow(()-> new RuntimeException("Failed to find MVP"));
+    }
+
+    private List<PlayerData> validatedPlayers(List<PlayerData> players){
+        if (players == null || players.isEmpty())
+            throw new IllegalArgumentException("Failed to getMvp. Players list is null or empty");
+        return players;
+    }
+    private PlayerData mergePlayers(PlayerData existingPlayer, PlayerData newPlayer) {
+        existingPlayer.setRatingPoints(existingPlayer.getRatingPoints() + newPlayer.getRatingPoints());
+        return existingPlayer;
     }
 
     private File[] getGameFiles(File gameDir) {

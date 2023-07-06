@@ -2,47 +2,35 @@ package com.skai.mvpassignment.service.impl;
 
 import com.skai.mvpassignment.model.GameResult;
 import com.skai.mvpassignment.model.statistics.PlayerStats;
-import com.skai.mvpassignment.service.FileParser;
-import com.skai.mvpassignment.service.GameFileService;
-import com.skai.mvpassignment.service.StatsCounter;
-import com.skai.mvpassignment.service.StatsManager;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.skai.mvpassignment.service.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class StatsCounterImpl implements StatsCounter {
     private final FileParser fileParser;
-    private final GameFileService gameFileService;
-    private final Map<String, StatsManager<?>> statsManagersMap = new HashMap<>();
-
-    @Autowired
-    public StatsCounterImpl(FileParser fileParser, GameFileService gameFileService, List<StatsManager<?>> statsManagers) {
-        this.fileParser = fileParser;
-        this.gameFileService = gameFileService;
-        statsManagers.forEach(statsManager -> statsManagersMap.put(statsManager.getGameName(), statsManager));
-    }
-
+    private final StatsManagerProvider statsManagerProvider;
 
     @Override
     public Map<String, List<GameResult>> calculateGameResults(File file) {
-        String gameName = gameFileService.getGameName(file);
-        StatsManager<?> statsManager = statsManagersMap.get(gameName);
-        if (statsManager == null)
-            throw new IllegalArgumentException("Unsupported game: " + gameName);
+        StatsManager<?> statsManager = statsManagerProvider.getStatsManager(file);
         return calculateGameResults(file, statsManager);
     }
 
     private Map<String, List<GameResult>> calculateGameResults(File file, StatsManager<? extends PlayerStats> statsManager) {
-        return fileParser.getTeamsStats(file, statsManager.getType()).entrySet().stream()
+        return fileParser.getTeamsStats(file, statsManager.type()).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .map(stats -> new GameResult(stats, statsManager.calculateGameScore(stats)))
-                                .collect(Collectors.toList())));
+                        entry -> calculateTeamResults(entry.getValue(), statsManager)));
+    }
+    private List<GameResult> calculateTeamResults(List<? extends PlayerStats> teamStats, StatsManager<? extends PlayerStats> statsManager) {
+        return teamStats.stream()
+                .map(stats -> new GameResult(stats, statsManager.calculateGameScore(stats)))
+                .collect(Collectors.toList());
     }
 }

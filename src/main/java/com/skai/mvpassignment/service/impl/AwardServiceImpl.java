@@ -27,38 +27,54 @@ public class AwardServiceImpl implements AwardService {
         String winnerTeamName = getWinnerTeamName(teamsGameResults);
         return teamsGameResults.entrySet()
                 .stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getKey().equals(winnerTeamName) ?
-                                bonusService.addBonuses(entry.getValue()) :
-                                entry.getValue()
-                )).values()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> applyBonuses(entry, winnerTeamName)))
+                .values()
                 .stream()
                 .flatMap(List::stream)
-                .map(GameResult::getPlayerData)
                 .collect(Collectors.toList());
+    }
+
+    private List<PlayerData> applyBonuses(Map.Entry<String,List<GameResult>> entry, String winnerTeamName){
+        return entry.getKey().equals(winnerTeamName) ?
+                bonusService.addBonuses(entry.getValue()) :
+                entry.getValue().stream()
+                        .map(GameResult::getPlayerData)
+                        .collect(Collectors.toList());
     }
 
     private String getWinnerTeamName(Map<String, List<GameResult>> teamsGameResults) {
         try {
-            return (String) teamsGameResults.entrySet().stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            entry -> entry.getValue().stream()
-                                    .mapToInt(gameResult -> gameResult.getGameData().getGameScore())
-                                    .sum()
-                    )).entrySet().stream()
+            return calculateTeamScores(teamsGameResults)
+                    .entrySet()
+                    .stream()
                     .sorted(Map.Entry.comparingByValue())
                     .skip(Math.max(0, teamsGameResults.size() - 2))
                     .distinct()
                     .collect(Collectors.collectingAndThen(
                             Collectors.toList(),
-                            entries -> entries.get(0).getValue().equals(entries.get(1).getValue()) ?
-                                    Optional.empty() : Optional.of(entries.get(1).getKey()))
-                    ).orElseThrow(() -> new IllegalStateException("Invalid game statistics. Cannot define the winner team"));
+                            this::getWinnerTeamName
+                    ))
+                    .orElseThrow(() -> new IllegalStateException("Invalid game statistics. Cannot define the winner team"));
         } catch (IndexOutOfBoundsException e) {
             throw new IllegalStateException("Invalid game statistics. Must be at least 2 teams in a game");
         }
+    }
 
+    private Map<String, Integer> calculateTeamScores(Map<String, List<GameResult>> teamsGameResults) {
+        return teamsGameResults.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue()
+                                .stream()
+                                .mapToInt(gameResult -> gameResult.getGameData().getGameScore())
+                                .sum()
+                ));
+    }
+
+    private Optional<String> getWinnerTeamName(List<Map.Entry<String, Integer>> entries) {
+        return entries.get(0).getValue().equals(entries.get(1).getValue())
+                ? Optional.empty()
+                : Optional.of(entries.get(1).getKey());
     }
 }

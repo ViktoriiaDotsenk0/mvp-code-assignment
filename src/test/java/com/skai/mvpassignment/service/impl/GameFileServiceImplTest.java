@@ -30,7 +30,7 @@ class GameFileServiceImplTest {
     }
 
     @Test
-    public void testGetGameNameWithEmptyFile() throws IOException {
+    public void testGetGameNameWithEmptyFile() {
         // Arrange
         File gameFile = new File("src/test/resources/test-tournament/empty.csv");
 
