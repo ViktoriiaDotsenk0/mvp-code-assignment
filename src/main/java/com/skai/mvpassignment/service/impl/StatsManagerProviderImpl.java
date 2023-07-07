@@ -1,5 +1,6 @@
 package com.skai.mvpassignment.service.impl;
 
+import com.skai.mvpassignment.model.statistics.PlayerStats;
 import com.skai.mvpassignment.service.GameFileService;
 import com.skai.mvpassignment.service.StatsManager;
 import com.skai.mvpassignment.service.StatsManagerProvider;
@@ -13,12 +14,12 @@ import java.util.stream.Collectors;
 @Service
 public class StatsManagerProviderImpl implements StatsManagerProvider {
     private final GameFileService gameFileService;
-    private final Map<String, StatsManager<?>> statsManagersMap;
+    private final Map<String, StatsManager<? extends PlayerStats>> statsManagersMap;
 
-    public StatsManagerProviderImpl(GameFileService gameFileService, List<StatsManager<?>> statsManagers) {
+    public StatsManagerProviderImpl(GameFileService gameFileService, List<StatsManager<? extends PlayerStats>> statsManagerImpls) {
         this.gameFileService = gameFileService;
-        this.statsManagersMap = statsManagers.stream().collect(Collectors.toMap(
-                StatsManager::gameName,
+        this.statsManagersMap = statsManagerImpls.stream().collect(Collectors.toMap(
+                StatsManager::getGameName,
                 statsManager -> statsManager
         ));
     }
@@ -26,9 +27,9 @@ public class StatsManagerProviderImpl implements StatsManagerProvider {
     @Override
     public StatsManager<?> getStatsManager(File file) {
         String gameName = gameFileService.getGameName(file);
-        StatsManager<?> statsManager = statsManagersMap.get(gameName);
-        if (statsManager == null)
+        StatsManager<?> statsManagerImpl = statsManagersMap.get(gameName);
+        if (statsManagerImpl == null)
             throw new IllegalArgumentException("Unsupported game: " + gameName);
-        return statsManager;
+        return statsManagerImpl;
     }
 }

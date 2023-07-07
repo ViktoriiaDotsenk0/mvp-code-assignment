@@ -1,7 +1,9 @@
 package com.skai.mvpassignment.service;
 
+import com.skai.mvpassignment.model.statistics.PlayerStats;
+
 import java.io.File;
 
 public interface StatsManagerProvider {
-    StatsManager<?> getStatsManager(File file);
+    StatsManager<? extends PlayerStats> getStatsManager(File file);
 }

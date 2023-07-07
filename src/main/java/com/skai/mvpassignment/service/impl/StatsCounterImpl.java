@@ -19,12 +19,12 @@ public class StatsCounterImpl implements StatsCounter {
 
     @Override
     public Map<String, List<GameResult>> calculateGameResults(File file) {
-        StatsManager<?> statsManager = statsManagerProvider.getStatsManager(file);
-        return calculateGameResults(file, statsManager);
+        StatsManager<?> statsManagerImpl = statsManagerProvider.getStatsManager(file);
+        return calculateGameResults(file, statsManagerImpl);
     }
 
     private Map<String, List<GameResult>> calculateGameResults(File file, StatsManager<? extends PlayerStats> statsManager) {
-        return fileParser.getTeamsStats(file, statsManager.type()).entrySet().stream()
+        return fileParser.getTeamsStats(file, statsManager.getType()).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         entry -> calculateTeamResults(entry.getValue(), statsManager)));
     }

@@ -1,6 +1,7 @@
 package com.skai.mvpassignment.service;
 
 import com.skai.mvpassignment.model.statistics.BasketballPlayerStats;
+import com.skai.mvpassignment.service.impl.basketball.BasketballStatsManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,7 @@ class StatsManagerTest {
     @BeforeEach
     public void setUp() {
         mockCalculator = mock(StatsCalculator.class);
-        underTest = new StatsManager<>("BASKETBALL", BasketballPlayerStats.class, mockCalculator);
+        underTest = new BasketballStatsManager(mockCalculator);
     }
 
     @Test

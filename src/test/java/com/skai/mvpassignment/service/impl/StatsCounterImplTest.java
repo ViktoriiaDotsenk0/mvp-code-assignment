@@ -4,7 +4,6 @@ import com.skai.mvpassignment.model.GameResult;
 import com.skai.mvpassignment.model.statistics.BasketballPlayerStats;
 import com.skai.mvpassignment.model.statistics.PlayerStats;
 import com.skai.mvpassignment.service.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +27,7 @@ class StatsCounterImplTest {
     private FileParser fileParser;
 
     @Mock
-    private  StatsManagerProvider statsManagerProvider;
+    private  StatsManagerProvider mockStatsManagerProvider;
 
     @Mock
     private StatsManager mockStatsManager;
@@ -38,10 +36,10 @@ class StatsCounterImplTest {
     void calculateGameResults() {
         // given
         File mockFile = mock(File.class);
-        when(statsManagerProvider.getStatsManager(mockFile)).thenReturn(mockStatsManager);
+        when(mockStatsManagerProvider.getStatsManager(mockFile)).thenReturn(mockStatsManager);
         PlayerStats playerStats = BasketballPlayerStats.builder().teamName("Team A").name("Player1").build();
         when(mockStatsManager.calculateGameScore(playerStats)).thenReturn(100);
-        when(mockStatsManager.type()).thenReturn(BasketballPlayerStats.class);
+        when(mockStatsManager.getType()).thenReturn(BasketballPlayerStats.class);
         when(fileParser.getTeamsStats(mockFile, BasketballPlayerStats.class)).thenReturn(Collections.singletonMap("Team A", Collections.singletonList(playerStats)));
 
         // when
